@@ -23,8 +23,8 @@ class FieldElement:
 
     def __ne__(self, other):
         # this should be the inverse of the == operator
-        raise NotImplementedError
-
+        return self.num != other.num
+        
     # tag::source2[]
     def __add__(self, other):
         if self.prime != other.prime:  # <1>
@@ -38,16 +38,18 @@ class FieldElement:
             raise TypeError('Cannot subtract two numbers in different Fields')
         # self.num and other.num are the actual values
         # self.prime is what we need to mod against
+        res = (self.num - other.num) % self.prime
         # We return an element of the same class
-        raise NotImplementedError
+        return self.__class__(res, self.prime)
 
     def __mul__(self, other):
         if self.prime != other.prime:
             raise TypeError('Cannot multiply two numbers in different Fields')
         # self.num and other.num are the actual values
         # self.prime is what we need to mod against
+        res = (self.num * other.num) % self.prime
         # We return an element of the same class
-        raise NotImplementedError
+        return self.__class__(res, self.prime)
 
     # tag::source3[]
     def __pow__(self, exponent):
