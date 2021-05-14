@@ -63,10 +63,12 @@ class FieldElement:
             raise TypeError('Cannot divide two numbers in different Fields')
         # use fermat's little theorem:
         # self.num**(p-1) % p == 1
+        inverted_num = pow(other.num, self.prime - 2, self.prime)
+        res = self.num * inverted_num % self.prime
         # this means:
         # 1/n == pow(n, p-2, p)
         # We return an element of the same class
-        raise NotImplementedError
+        return self.__class__(res, self.prime)
 
 
 class FieldElementTest(TestCase):
