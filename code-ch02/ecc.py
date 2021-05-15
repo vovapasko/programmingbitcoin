@@ -141,8 +141,7 @@ class Point:
     # end::source1[]
 
     def __ne__(self, other):
-        # this should be the inverse of the == operator
-        raise NotImplementedError
+        return not self.__eq__(other)
 
     def __repr__(self):
         if self.x is None:
