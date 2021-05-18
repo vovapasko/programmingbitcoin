@@ -192,7 +192,7 @@ class Point:
             s = (3 * x1**2 + self.a) / (2 * y1)
             x3 = s**2 - 2 * x1
             y3 = s * (x1 - x3) - y1
-            return self.__class__(x3, y3, self.a, self.b)
+
         raise NotImplementedError
 
 
