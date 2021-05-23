@@ -41,8 +41,8 @@ class TxFetcher:
             else:
                 tx = Tx.parse(BytesIO(raw), testnet=testnet)
             if tx.id() != tx_id:  # <1>
-                raise ValueError('not the same id: {} vs {}'.format(tx.id(), 
-                                  tx_id))
+                raise ValueError('not the same id: {} vs {}'.format(tx.id(),
+                                                                    tx_id))
             cls.cache[tx_id] = tx
         cls.cache[tx_id].testnet = testnet
         return cls.cache[tx_id]
@@ -110,13 +110,17 @@ class Tx:
         '''
         # s.read(n) will return n bytes
         # version is an integer in 4 bytes, little-endian
+        version = little_endian_to_int(s.read(4))
         # num_inputs is a varint, use read_varint(s)
+        num_inputs = read_varint(s)
         # parse num_inputs number of TxIns
+        txins_stream = BytesIO(bytes(num_inputs))
+        txins = TxIn.parse(txins_stream)
         # num_outputs is a varint, use read_varint(s)
         # parse num_outputs number of TxOuts
         # locktime is an integer in 4 bytes, little-endian
         # return an instance of the class (see __init__ for args)
-        raise NotImplementedError
+        return cls(version, txins, None, None)
 
     # tag::source6[]
     def serialize(self):
@@ -165,11 +169,19 @@ class TxIn:
         return a TxIn object
         '''
         # prev_tx is 32 bytes, little endian
+        prev_tx = little_endian_to_int(s.read(32))
         # prev_index is an integer in 4 bytes, little endian
+        prev_index = little_endian_to_int(s.read(4))
         # use Script.parse to get the ScriptSig
+        script_hex = ('6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccf\
+cf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8\
+e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278\
+a')
+        stream = BytesIO(bytes.fromhex(script_hex))
+        script_sig = Script.parse(stream)
         # sequence is an integer in 4 bytes, little-endian
         # return an instance of the class (see __init__ for args)
-        raise NotImplementedError
+        return cls(prev_tx, prev_index, script_sig)
 
     # tag::source5[]
     def serialize(self):
