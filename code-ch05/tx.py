@@ -72,7 +72,7 @@ class TxFetcher:
 # tag::source1[]
 class Tx:
 
-    def __init__(self, version, tx_ins, tx_outs, locktime, testnet=False):
+    def __init__(self, version: int, tx_ins: list, tx_outs: list, locktime, testnet=False):
         self.version = version
         self.tx_ins = tx_ins  # <1>
         self.tx_outs = tx_outs
@@ -104,7 +104,7 @@ class Tx:
     # end::source1[]
 
     @classmethod
-    def parse(cls, s, testnet=False):
+    def parse(cls, s: BytesIO, testnet=False):
         '''Takes a byte stream and parses the transaction at the start
         return a Tx object
         '''
@@ -114,13 +114,19 @@ class Tx:
         # num_inputs is a varint, use read_varint(s)
         num_inputs = read_varint(s)
         # parse num_inputs number of TxIns
-        txins_stream = BytesIO(bytes(num_inputs))
-        txins = TxIn.parse(txins_stream)
+        inputs = []
+        for _ in range(num_inputs):
+            inputs.append(TxIn.parse(s))
         # num_outputs is a varint, use read_varint(s)
+        num_outputs = read_varint(s)
         # parse num_outputs number of TxOuts
+        outputs = []
+        for _ in range(num_outputs):
+            outputs.append(TxOut.parse(s))
         # locktime is an integer in 4 bytes, little-endian
+        loctime = little_endian_to_int(s.read(4))
         # return an instance of the class (see __init__ for args)
-        return cls(version, txins, None, None)
+        return cls(version, inputs, outputs, loctime, testnet=testnet)
 
     # tag::source6[]
     def serialize(self):
@@ -169,19 +175,16 @@ class TxIn:
         return a TxIn object
         '''
         # prev_tx is 32 bytes, little endian
-        prev_tx = little_endian_to_int(s.read(32))
+        prev_tx = s.read(32)[::-1]
         # prev_index is an integer in 4 bytes, little endian
         prev_index = little_endian_to_int(s.read(4))
         # use Script.parse to get the ScriptSig
-        script_hex = ('6b483045022100ed81ff192e75a3fd2304004dcadb746fa5e24c5031ccf\
-cf21320b0277457c98f02207a986d955c6e0cb35d446a89d3f56100f4d7f67801c31967743a9c8\
-e10615bed01210349fc4e631e3624a545de3f89f5d8684c7b8138bd94bdd531d2e213bf016b278\
-a')
-        stream = BytesIO(bytes.fromhex(script_hex))
-        script_sig = Script.parse(stream)
+        script_sig = Script.parse(s)
         # sequence is an integer in 4 bytes, little-endian
+        sequence = little_endian_to_int(s.read(4))
+
         # return an instance of the class (see __init__ for args)
-        return cls(prev_tx, prev_index, script_sig)
+        return cls(prev_tx, prev_index, script_sig, sequence)
 
     # tag::source5[]
     def serialize(self):
@@ -230,9 +233,11 @@ class TxOut:
         return a TxOut object
         '''
         # amount is an integer in 8 bytes, little endian
+        amount = little_endian_to_int(s.read(8))
         # use Script.parse to get the ScriptPubKey
+        script_pubkey = Script.parse(s)
         # return an instance of the class (see __init__ for args)
-        raise NotImplementedError
+        return cls(amount, script_pubkey)
 
     # tag::source4[]
     def serialize(self):  # <1>
