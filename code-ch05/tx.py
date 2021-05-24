@@ -145,11 +145,15 @@ class Tx:
     def fee(self):
         '''Returns the fee of this transaction in satoshi'''
         # initialize input sum and output sum
+        input_sum, output_sum = 0, 0
         # use TxIn.value() to sum up the input amounts
+        for tx_in in self.tx_ins:
+            input_sum += tx_in.value()
         # use TxOut.amount to sum up the output amounts
+        for tx_out in self.tx_outs:
+            output_sum += tx_out.amount
         # fee is input sum - output sum
-        raise NotImplementedError
-
+        return input_sum - output_sum
 
 # tag::source2[]
 class TxIn:
