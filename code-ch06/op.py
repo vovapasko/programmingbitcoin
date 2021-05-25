@@ -643,11 +643,15 @@ def op_sha256(stack):
     return True
 
 
-def op_hash160(stack):
+def op_hash160(stack: list) -> bool:
     # check that there's at least 1 element on the stack
+    if len(stack) < 1:
+        return False
     # pop off the top element from the stack
+    element = stack.pop()
     # push a hash160 of the popped off element to the stack
-    raise NotImplementedError
+    stack.append(hash160(element))
+    return True
 
 
 # tag::source2[]
